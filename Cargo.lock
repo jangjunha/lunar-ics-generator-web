@@ -72,6 +72,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "pure-rust-locales",
  "time",
  "wasm-bindgen",
  "winapi",
@@ -92,6 +93,12 @@ name = "core-foundation-sys"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
+
+[[package]]
+name = "either"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
 name = "form_urlencoded"
@@ -383,6 +390,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ical"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "356d82bd58997815d55ea6f9081bd4cac149e50ca943f7a4f7c050fec7271c1f"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "implicit-clone"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -399,6 +415,15 @@ checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
  "hashbrown",
+]
+
+[[package]]
+name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -449,8 +474,12 @@ name = "lunar-ics-web"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "ical",
+ "itertools",
+ "js-sys",
  "korean-lunar-calendar",
  "log",
+ "wasm-bindgen",
  "wasm-logger",
  "web-sys",
  "yew",
@@ -595,6 +624,12 @@ dependencies = [
  "tokio-stream",
  "wasm-bindgen-futures",
 ]
+
+[[package]]
+name = "pure-rust-locales"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b45c49fc4f91f35bae654f85ebb3a44d60ac64f11b3166ffa609def390c732d8"
 
 [[package]]
 name = "quote"
