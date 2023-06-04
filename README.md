@@ -2,7 +2,7 @@
 
 <https://lunar-ics.jangjunha.me/>
 
-![./screenshot.png]
+![웹사이트 스크린샷](./screenshot.png)
 
 ## Requirements
 
