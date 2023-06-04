@@ -118,19 +118,26 @@ fn App() -> Html {
     };
 
     html! {
-        <Layout>
-            <Form
-                title={(*title).clone()}
-                date={(*date).clone()}
-                is_leap={*is_leap}
-                is_download_disabled={gregorian_dates.is_empty()}
-                on_change_title={handle_change_title}
-                on_change_date={handle_change_date}
-                on_change_is_leap={handle_change_is_leap}
-                on_click_download={handle_click_download}
+        <>
+            <Layout>
+                <Form
+                    title={(*title).clone()}
+                    date={(*date).clone()}
+                    is_leap={*is_leap}
+                    is_download_disabled={gregorian_dates.is_empty()}
+                    on_change_title={handle_change_title}
+                    on_change_date={handle_change_date}
+                    on_change_is_leap={handle_change_is_leap}
+                    on_click_download={handle_click_download}
+                />
+                <Preview dates={(*gregorian_dates).clone()} />
+            </Layout>
+            <script
+                defer={true}
+                src="https://static.cloudflareinsights.com/beacon.min.js"
+                data-cf-beacon="{\"token\": \"78a72cf37ddb4cd38b89d463b856cca0\"}"
             />
-            <Preview dates={(*gregorian_dates).clone()} />
-        </Layout>
+        </>
     }
 }
 
