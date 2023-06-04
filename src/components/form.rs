@@ -3,17 +3,17 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct FormProps {
-    pub title: String,
-    pub date: String,
+    pub title: AttrValue,
+    pub date: AttrValue,
     pub is_leap: bool,
 
     #[prop_or_default]
     pub is_download_disabled: bool,
 
     #[prop_or_default]
-    pub on_change_title: Callback<String>,
+    pub on_change_title: Callback<AttrValue>,
     #[prop_or_default]
-    pub on_change_date: Callback<String>,
+    pub on_change_date: Callback<AttrValue>,
     #[prop_or_default]
     pub on_change_is_leap: Callback<bool>,
     #[prop_or_default]
@@ -26,7 +26,7 @@ pub fn Form(props: &FormProps) -> Html {
         let on_change_title = props.on_change_title.clone();
         Callback::from(move |e: InputEvent| {
             let target: HtmlInputElement = e.target_unchecked_into();
-            on_change_title.emit(target.value());
+            on_change_title.emit(target.value().into());
         })
     };
 
@@ -34,7 +34,7 @@ pub fn Form(props: &FormProps) -> Html {
         let on_change_date = props.on_change_date.clone();
         Callback::from(move |e: InputEvent| {
             let target: HtmlInputElement = e.target_unchecked_into();
-            on_change_date.emit(target.value());
+            on_change_date.emit(target.value().into());
         })
     };
 

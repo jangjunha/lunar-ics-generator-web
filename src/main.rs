@@ -78,8 +78,8 @@ where
 
 #[function_component]
 fn App() -> Html {
-    let title = use_state(|| "".to_owned());
-    let date = use_state(|| "".to_owned());
+    let title = use_state(|| AttrValue::from(""));
+    let date = use_state(|| AttrValue::from(""));
     let is_leap = use_state(|| false);
 
     let handle_change_title = use_callback(
