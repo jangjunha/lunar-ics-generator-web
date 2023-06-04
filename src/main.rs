@@ -1,4 +1,5 @@
-use chrono::{Locale, NaiveDate, NaiveTime};
+use chrono::{Locale, NaiveDate, NaiveTime, Utc};
+use chrono_tz::Tz;
 use ical::{
     generator::{Emitter, IcalCalendar, IcalCalendarBuilder, IcalEventBuilder},
     ical_property,
@@ -7,6 +8,7 @@ use ical::{
 use itertools::Itertools;
 use js_sys;
 use korean_lunar_calendar::{lunar_to_gregorian, LunarDate};
+use uuid::Uuid;
 use wasm_bindgen::JsValue;
 use wasm_logger;
 use web_sys::{window, Blob, BlobPropertyBag, HtmlInputElement, Url};
@@ -66,20 +68,24 @@ fn convert_and_repeat(
 #[derive(Debug)]
 struct IntlOptions {
     pub locale: Locale,
-    pub tzstring: String,
+    pub tz: Tz,
 }
 
 fn resolve_intl() -> IntlOptions {
     let options = js_sys::Intl::DateTimeFormat::new(&js_sys::Array::new(), &js_sys::Object::new())
         .resolved_options();
+
     let locale_string = js_sys::Reflect::get(&options, &JsValue::from_str("locale"))
         .map_or(None, |v| v.as_string())
         .unwrap_or("ko-KR".to_owned());
     let tzstring = js_sys::Reflect::get(&options, &JsValue::from_str("timeZone"))
         .map_or(None, |v| v.as_string())
         .unwrap_or("Asia/Seoul".to_owned());
+
     let locale = (&locale_string as &str).try_into().unwrap_or(Locale::ko_KR);
-    IntlOptions { locale, tzstring }
+    let tz: Tz = tzstring.parse().unwrap_or(Tz::Asia__Seoul);
+
+    IntlOptions { locale, tz }
 }
 
 #[function_component]
@@ -119,22 +125,29 @@ fn App() -> Html {
         let title = title.clone();
         use_callback(
             move |_, gregorian_dates| {
-                let mut cal = IcalCalendarBuilder::version("2.0")
-                    .gregorian()
-                    .prodid("-//lunar-ical//heek.kr//")
-                    .build();
-                cal.events.extend(gregorian_dates.iter().map(|d| {
-                    let date_string = d
-                        .and_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
-                        .format("%Y%m%d")
-                        .to_string();
-                    IcalEventBuilder::tzid(resolve_intl().tzstring)
-                        .uid("12312312") // TODO:
-                        .changed("20230603") // TODO:
-                        .one_day(date_string)
-                        .set(ical_property!("SUMMARY", &*title))
-                        .build()
-                }));
+                let intl = resolve_intl();
+                let utc_now = Utc::now();
+
+                let cal = {
+                    let mut cal = IcalCalendarBuilder::version("2.0")
+                        .gregorian()
+                        .prodid("-//lunar-ical//heek.kr//")
+                        .build();
+                    cal.events.extend(gregorian_dates.iter().map(|d| {
+                        let uuid = Uuid::new_v4();
+                        let date_string = d
+                            .and_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+                            .format("%Y%m%d")
+                            .to_string();
+                        IcalEventBuilder::tzid(intl.tz.to_string())
+                            .uid(uuid.to_string())
+                            .changed(utc_now.format("%Y%m%dT%H%M%SZ").to_string())
+                            .one_day(date_string)
+                            .set(ical_property!("SUMMARY", &*title))
+                            .build()
+                    }));
+                    cal
+                };
                 download_ics(&cal);
             },
             gregorian_dates.clone(),
