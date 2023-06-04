@@ -1,36 +1,18 @@
-use chrono::{Locale, NaiveDate, NaiveTime, Utc};
-use chrono_tz::Tz;
+use chrono::{NaiveDate, NaiveTime, Utc};
 use ical::{
-    generator::{Emitter, IcalCalendar, IcalCalendarBuilder, IcalEventBuilder},
+    generator::{Emitter, IcalCalendarBuilder, IcalEventBuilder},
     ical_property,
     property::Property,
 };
 use itertools::Itertools;
-use js_sys;
 use korean_lunar_calendar::{lunar_to_gregorian, LunarDate};
 use uuid::Uuid;
-use wasm_bindgen::JsValue;
 use wasm_logger;
-use web_sys::{window, Blob, BlobPropertyBag, HtmlInputElement, Url};
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-fn download_ics(ics: &IcalCalendar) {
-    let content = JsValue::from_str(&ics.generate());
-    let options = {
-        let mut options = BlobPropertyBag::new();
-        options.type_("text/calendar");
-        options
-    };
-    let blob = Blob::new_with_str_sequence_and_options(
-        &js_sys::Array::from_iter(std::iter::once(content)),
-        &options,
-    )
-    .unwrap();
-    let url = Url::create_object_url_with_blob(&blob).unwrap();
-    let _ = window()
-        .expect("window is undefined")
-        .open_with_url_and_target(&url, "_blank");
-}
+mod utils;
+use utils::{download_string_blob, resolve_intl};
 
 fn convert_and_repeat(
     lunar_date_string: &str,
@@ -63,29 +45,6 @@ fn convert_and_repeat(
             })
             .take(limit),
     )
-}
-
-#[derive(Debug)]
-struct IntlOptions {
-    pub locale: Locale,
-    pub tz: Tz,
-}
-
-fn resolve_intl() -> IntlOptions {
-    let options = js_sys::Intl::DateTimeFormat::new(&js_sys::Array::new(), &js_sys::Object::new())
-        .resolved_options();
-
-    let locale_string = js_sys::Reflect::get(&options, &JsValue::from_str("locale"))
-        .map_or(None, |v| v.as_string())
-        .unwrap_or("ko-KR".to_owned());
-    let tzstring = js_sys::Reflect::get(&options, &JsValue::from_str("timeZone"))
-        .map_or(None, |v| v.as_string())
-        .unwrap_or("Asia/Seoul".to_owned());
-
-    let locale = (&locale_string as &str).try_into().unwrap_or(Locale::ko_KR);
-    let tz: Tz = tzstring.parse().unwrap_or(Tz::Asia__Seoul);
-
-    IntlOptions { locale, tz }
 }
 
 #[function_component]
@@ -148,7 +107,7 @@ fn App() -> Html {
                     }));
                     cal
                 };
-                download_ics(&cal);
+                download_string_blob(&cal.generate(), "text/calendar");
             },
             gregorian_dates.clone(),
         )
